@@ -2,6 +2,8 @@
 - 1 GPU, mem = 128g, 10 warmup steps, 5 active steps. 
 - Chrome trace file: json.gz: 202MB
 
+- Full trace address: /scratch/bcjw/hla/alphafold3/alphafold3-pytorch/gpua011.delta.ncsa.illinois.edu_Jun_21_05_46_43.json.gz
+
 - Cannot load to perfetto. Oops! Your WASM trace processor ran out of memory✕
 => Need to use native TraceProcessor
 
