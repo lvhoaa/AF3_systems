@@ -465,10 +465,8 @@ class Trainer:
 
     # main train forwards
 
-    def __call__(
-        self
-    ):
-
+    def __call__(self):
+        
         self.generate_train_id()
 
         # cycle through dataloader
@@ -494,7 +492,6 @@ class Trainer:
                 with self.fabric.no_backward_sync(self.model, enabled = is_accumulating):
 
                     # model forwards
-
                     loss, loss_breakdown = self.model(
                         **inputs,
                         return_loss_breakdown = True
@@ -516,6 +513,7 @@ class Trainer:
             self.log(**train_loss_breakdown)
 
             self.print(f'loss: {total_loss:.3f}')
+            print('loss here: ', total_loss)
 
             # clip gradients
 

@@ -1,0 +1,7 @@
+- Code: demo.py; mini-model of AF3
+- 1 GPU, mem = 128g, 10 warmup steps, 5 active steps. 
+- Chrome trace file: json.gz: 202MB
+
+- Cannot load to perfetto. Oops! Your WASM trace processor ran out of memory✕
+=> Need to use native TraceProcessor
+
