@@ -20,6 +20,10 @@ A fork with full Lightning + Hydra support is being maintained by <a href="https
 
 - <a href="https://github.com/gitabtion">Heng</a> for pointing out inconsistencies with the paper and pull requesting the solutions
 
+- <a href="https://github.com/gitabtion">Heng</a> for finding an issue with the molecular atom indices for the distogram loss
+
+- <a href="https://github.com/luwei0917">Wei Lu</a> for catching a few erroneous hyperparameters
+
 - <a href="https://github.com/amorehead">Alex</a> for the PDB dataset preparation script!
 
 - <a href="https://github.com/patrick-kidger">Patrick</a> for <a href="https://docs.kidger.site/jaxtyping/">jaxtyping</a>, <a href="https://github.com/fferflo">Florian</a> for <a href="https://github.com/fferflo/einx">einx</a>, and of course, <a href="https://github.com/arogozhnikov">Alex</a> for <a href="https://einops.rocks/">einops</a>
@@ -136,13 +140,13 @@ find . -type f -name "*.gz" -exec gzip -d {} \;
 
 Next run the commands `wget -P data/CCD/ https://files.wwpdb.org/pub/pdb/data/monomers/components.cif.gz` and `wget -P data/CCD/ https://files.wwpdb.org/pub/pdb/data/component-models/complete/chem_comp_model.cif.gz` from the project's root directory to download the latest version of the PDB's Chemical Component Dictionary (CCD) and its structural models. Extract each of these files using the command `find data/CCD/ -type f -name "*.gz" -exec gzip -d {} \;`.
 
-Then run the following with <pdb_dir>, <ccd_dir>, and <out_dir> replaced with the locations of your local copies of the PDB, CCD, and your desired dataset output directory (e.g., `data/PDB_set/` by default).
+Then run the following with <pdb_dir>, <ccd_dir>, and <output_dir> replaced with the locations of your local copies of the PDB, CCD, and your desired dataset output directory (e.g., `data/PDB_set/` by default).
 ```bash
-python alphafold3_pytorch/pdb_dataset_curation.py --mmcif_dir <pdb_dir> --ccd_dir <ccd_dir> --out_dir <out_dir>
+python alphafold3_pytorch/pdb_dataset_curation.py --mmcif_dir <pdb_dir> --ccd_dir <ccd_dir> --output_dir <output_dir>
 ```
 
 See the script for more options. Each mmCIF that successfully passes
-all processing steps will be written to <out_dir> within a subdirectory
+all processing steps will be written to <output_dir> within a subdirectory
 named using the mmCIF's second and third PDB ID characters (e.g. `5c`).
 
 ## Contributing

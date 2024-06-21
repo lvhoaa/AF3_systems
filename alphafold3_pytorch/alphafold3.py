@@ -19,7 +19,7 @@ from torch.nn import (
 
 from typing import List, Literal, Tuple, NamedTuple, Callable
 
-from alphafold3_pytorch.typing import (
+from alphafold3_pytorch.custom_typing import (
     Float,
     Int,
     Bool,
@@ -1455,6 +1455,7 @@ class DiffusionTransformer(Module):
         attn_window_size = None,
         attn_pair_bias_kwargs: dict = dict(),
         attn_num_memory_kv = False,
+        trans_expansion_factor = 2,
         num_register_tokens = 0,
         serial = False,
         use_linear_attn = False,
@@ -1509,7 +1510,8 @@ class DiffusionTransformer(Module):
             )
 
             transition = Transition(
-                dim = dim
+                dim = dim,
+                expansion_factor = trans_expansion_factor
             )
 
             conditionable_pair_bias = ConditionWrapper(
@@ -1959,8 +1961,8 @@ class ElucidatedAtomDiffusion(Module):
         sigma_data = 0.5,      # standard deviation of data distribution
         rho = 7,               # controls the sampling schedule
         P_mean = -1.2,         # mean of log-normal distribution from which noise is drawn for training
-        P_std = 1.2,           # standard deviation of log-normal distribution from which noise is drawn for training
-        S_churn = 80,          # parameters for stochastic sampling - depends on dataset, Table 5 in apper
+        P_std = 1.5,           # standard deviation of log-normal distribution from which noise is drawn for training
+        S_churn = 80,          # parameters for stochastic sampling - depends on dataset, Table 5 in paper
         S_tmin = 0.05,
         S_tmax = 50,
         S_noise = 1.003,
@@ -3268,7 +3270,7 @@ class Alphafold3(Module):
         # handle offsets for molecule atom indices
 
         if exists(molecule_atom_indices):
-            molecule_atom_indices = molecule_atom_indices + F.pad(molecule_atom_lens, (-1, 1), value = 0)
+            molecule_atom_indices = molecule_atom_indices + F.pad(molecule_atom_lens.cumsum(dim = -1), (1, -1), value = 0)
 
         # get atom sequence length and molecule sequence length depending on whether using packed atomic seq
 
