@@ -1,3 +1,5 @@
+## Source: https://github.com/lucidrains/alphafold3-pytorch
+
 <img src="./alphafold3.png" width="500px"></img>
 
 ## Alphafold 3 - Pytorch
