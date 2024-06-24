@@ -52,6 +52,7 @@ from tqdm import tqdm
 from importlib.metadata import version
 
 from huggingface_hub import PyTorchModelHubMixin, hf_hub_download
+# from mmengine.model import BaseModel
 
 """
 global ein notation:

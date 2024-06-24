@@ -38,6 +38,9 @@ import logging
 import socket
 from datetime import datetime, timedelta
 import matplotlib
+from thop import profile
+from deepspeed.utils.timer import SynchronizedWallClockTimer 
+
 
 # Memory profiler configs
 logging.basicConfig(
@@ -501,6 +504,8 @@ class Trainer:
 
     def __call__(self):
         
+        print("Memory usage after model initialization: ", SynchronizedWallClockTimer.memory_usage())
+        
         self.generate_train_id()
 
         # cycle through dataloader
@@ -511,7 +516,7 @@ class Trainer:
                 torch.profiler.ProfilerActivity.CPU,
                 torch.profiler.ProfilerActivity.CUDA,
             ],
-            schedule=torch.profiler.schedule(wait=0, warmup=11, active=10, repeat=1),
+            schedule=torch.profiler.schedule(wait=0, warmup=10, active=5, repeat=1),
             on_trace_ready=trace_handler,
             # on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/fold'),
             record_shapes=True,
@@ -525,7 +530,7 @@ class Trainer:
                 prof.step()  # Need to call this at each step to notify profiler of steps' boundary.
                 
                 self.model.train()
-
+                
                 # gradient accumulation
                 total_loss = 0.
                 train_loss_breakdown = None
@@ -537,7 +542,8 @@ class Trainer:
                     # print(torch.cuda.memory_summary(device=None, abbreviated=False))
                     # print('inputs memory size: ', sys.getsizeof(inputs))
                     
-                    inputs = move_to_device(inputs, 'cuda') # move single batch to gpu 
+                    inputs = move_to_device(inputs, 'cuda') # move single batch to gpu                      
+                    
                     with self.fabric.no_backward_sync(self.model, enabled = is_accumulating):
                         with record_function("## forward ##"):
                             # model forwards
@@ -560,9 +566,10 @@ class Trainer:
                                 resolved_labels = inputs["resolved_labels"],
                                 return_loss_breakdown = True
                             )
+                            print("Memory usage after forward pass: ", SynchronizedWallClockTimer.memory_usage())
                                                        
                             # multiply the sum of all parameters with zero and add it to the final loss
-                            loss += sum(torch.sum(param) for param in self.model.parameters()) * 0
+                            # loss += sum(torch.sum(param) for param in self.model.parameters()) * 0
 
                             # accumulate
                             scale = self.grad_accum_every ** -1
@@ -572,6 +579,8 @@ class Trainer:
                         with record_function("## backward ##"):
                             # backwards
                             self.fabric.backward(loss / self.grad_accum_every)
+                            print("Memory usage after backward pass: ", SynchronizedWallClockTimer.memory_usage())
+                        
                         # Try to free out part of the memory
                         del inputs, loss, loss_breakdown
 
@@ -586,7 +595,8 @@ class Trainer:
 
                     # optimizer step
                     self.optimizer.step()
-
+                    print("Memory usage after optimizer step: ", SynchronizedWallClockTimer.memory_usage())
+                    
                     # update exponential moving average
                     self.wait()
                     if self.is_main:
@@ -596,11 +606,12 @@ class Trainer:
                     # scheduler
                     self.scheduler.step()
                     self.optimizer.zero_grad()
+                    print("Memory usage after optimizer step zero grad: ", SynchronizedWallClockTimer.memory_usage())
+                    
 
                 self.steps += 1
 
                 # # maybe validate, for now, only on main with EMA model
-
                 # if (
                 #     self.is_main and
                 #     self.needs_valid and
@@ -608,107 +619,141 @@ class Trainer:
                 # ):
                 #     with torch.no_grad():
                 #         self.ema_model.eval()
-
                 #         total_valid_loss = 0.
                 #         valid_loss_breakdown = None
-
                 #         for valid_batch in self.valid_dataloader:
                 #             valid_loss, loss_breakdown = self.ema_model(
                 #                 **valid_batch,
                 #                 return_loss_breakdown = True
                 #             )
-
                 #             valid_batch_size = valid_batch.get('atom_inputs').shape[0]
                 #             scale = valid_batch_size / self.valid_dataset_size
-
                 #             total_valid_loss += valid_loss.item() * scale
                 #             valid_loss_breakdown = accum_dict(valid_loss_breakdown, loss_breakdown._asdict(), scale = scale)
-
                 #         self.print(f'valid loss: {total_valid_loss:.3f}')
-
                 #     # prepend valid_ to all losses for logging
-
                 #     valid_loss_breakdown = {f'valid_{k}':v for k, v in valid_loss_breakdown.items()}
-
                 #     # log
-
                 #     self.log(**valid_loss_breakdown)
-
                 # self.wait()
-
                 # if self.is_main and divisible_by(self.steps, self.checkpoint_every):
                 #     self.save_checkpoint()
-
                 # self.wait()
-
             # # maybe test
-
             # if self.is_main and self.needs_test:
             #     with torch.no_grad():
             #         self.ema_model.eval()
-
             #         total_test_loss = 0.
             #         test_loss_breakdown = None
-
             #         for test_batch in self.test_dataloader:
             #             test_loss, loss_breakdown = self.ema_model(
             #                 **test_batch,
             #                 return_loss_breakdown = True
             #             )
-
             #             test_batch_size = test_batch.get('atom_inputs').shape[0]
             #             scale = test_batch_size / self.test_dataset_size
-
             #             total_test_loss += test_loss.item() * scale
             #             test_loss_breakdown = accum_dict(test_loss_breakdown, loss_breakdown._asdict(), scale = scale)
-
             #         self.print(f'test loss: {total_test_loss:.3f}')
-
             #     # prepend test_ to all losses for logging
-
             #     test_loss_breakdown = {f'test_{k}':v for k, v in test_loss_breakdown.items()}
-
             #     # log
-
             #     self.log(**test_loss_breakdown)
 
         print('training complete')
 
+def calculate_model_size(alphafold3, dataset):
+    # Measuring MACs and #Parameters
+    # Use thop to measure # params and MACs 
+    print('Using THOP')
+    alphafold3.to('cuda')
+    dl = cycle(DataLoader(dataset, batch_size = 1, shuffle = True, drop_last = True))
+    inputs = next(dl)
+    inputs = move_to_device(inputs, 'cuda')
+    macs, params, thopDict = profile(model =alphafold3, inputs=inputs, ret_layer_info = True)
+    print("Model size: macs", macs, " Params: ", params)
+    
+    # param.numel()
+    print('Using param.numel()')
+    total_params = 0 
+    numelDict = {} 
+    for name, param in alphafold3.named_parameters():
+        val = param.numel()
+        numelDict[name] = val 
+        total_params += val
+    print("Total params of model: ", total_params)
+    
+    # preprocessing
+    toBeDeleted = [] 
+    toBeAdded = []
+    for key in numelDict:
+        if key[-6:] == "weight" and key[0:-6] + "bias" in numelDict:
+            prefix = key[0:-7]
+            toBeAdded.append((prefix, numelDict[key] + numelDict[key[0:-6] + "bias"]))
+            toBeDeleted.append(key)
+            toBeDeleted.append(key[0:-6] + "bias")
+        elif key[-6:] == "weight":
+            toBeDeleted.append(key)
+            toBeAdded.append((key[0:-7], numelDict[key]))
+    for key in toBeDeleted:
+        del numelDict[key]
+    for key, val in toBeAdded:
+        numelDict[key] = val
+    
+    # dfs helper function
+    def dfs(currDict, prefix, storeDict):
+        for key in currDict:
+            if len(currDict[key][2]) == 0:
+                # end dfs
+                storeDict[prefix + key] = currDict[key][1]
+            else:
+                # continue push dfs
+                dfs(currDict[key][2], prefix + key + ".", storeDict)
+    
+    thopValues = {}
+    dfs(thopDict, "", thopValues)
+    
+    # Log out operator differences:
+    listKeys = set(numelDict.keys()).union(set(thopValues.keys()))
+    for key in listKeys:
+        if numelDict.get(key, 0) != thopValues.get(key, 0):
+            print('operator: ', key, '; numelValue: ', numelDict.get(key, 0), '; THOPValue: ', thopValues.get(key, 0))
+    
 
 def demo():
     # Full version of AlphaFold3 
-    # alphafold3 = Alphafold3(dim_atom_inputs = 77,dim_template_feats = 44)
+    alphafold3 = Alphafold3(dim_atom_inputs = 77,dim_template_feats = 44)
     
     # Mini version: reduce all blocks depth to only 1 
-    alphafold3 = Alphafold3(
-        dim_atom_inputs = 77,
-        dim_template_feats = 44,
-        num_dist_bins = 38,
-        confidence_head_kwargs = dict(
-            pairformer_depth = 1
-        ),
-        template_embedder_kwargs = dict(
-            pairformer_stack_depth = 1
-        ),
-        msa_module_kwargs = dict(
-            depth = 1
-        ),
-        pairformer_stack = dict(
-            depth = 1
-        ),
-        diffusion_module_kwargs = dict(
-            atom_encoder_depth = 1,
-            token_transformer_depth = 1,
-            atom_decoder_depth = 1,
-        ),
-    )
+    # alphafold3 = Alphafold3(
+    #     dim_atom_inputs = 77,
+    #     dim_template_feats = 44,
+    #     num_dist_bins = 38,
+    #     confidence_head_kwargs = dict(
+    #         pairformer_depth = 1
+    #     ),
+    #     template_embedder_kwargs = dict(
+    #         pairformer_stack_depth = 1
+    #     ),
+    #     msa_module_kwargs = dict(
+    #         depth = 1
+    #     ),
+    #     pairformer_stack = dict(
+    #         depth = 1
+    #     ),
+    #     diffusion_module_kwargs = dict(
+    #         atom_encoder_depth = 1,
+    #         token_transformer_depth = 1,
+    #         atom_decoder_depth = 1,
+    #     ),
+    # )
     
     dataset = MockAtomDataset(8)
     
     trainer = Trainer(
         model = alphafold3,
         dataset = dataset,
-        num_train_steps = 21,
+        num_train_steps = 15,
         batch_size = 4,
         valid_every = 1,
         grad_accum_every = 2,
@@ -723,7 +768,9 @@ def demo():
 
     trainer()
     
-
+    # calculate_model_size(alphafold3, dataset)
+    
+        
 if __name__ == "__main__":
     print('Starting to run demo')
     demo()

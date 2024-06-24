@@ -1,0 +1,100 @@
+Memory usage after model initialization:   | mem_allocated: 4.4802 GB | max_mem_allocated: 4.4802 GB | cache_allocated: 4.5801 GB | max_cache_allocated: 4.5801 GB
+Training step:  0
+Memory usage after forward pass:   | mem_allocated: 6.5786 GB | max_mem_allocated: 6.6867 GB | cache_allocated: 6.9473 GB | max_cache_allocated: 6.9473 GB
+Memory usage after backward pass:   | mem_allocated: 5.4298 GB | max_mem_allocated: 6.6867 GB | cache_allocated: 7.0508 GB | max_cache_allocated: 7.0508 GB
+Memory usage after forward pass:   | mem_allocated: 7.0258 GB | max_mem_allocated: 7.1565 GB | cache_allocated: 7.4414 GB | max_cache_allocated: 7.4414 GB
+Memory usage after backward pass:   | mem_allocated: 5.4296 GB | max_mem_allocated: 7.1565 GB | cache_allocated: 7.4414 GB | max_cache_allocated: 7.4414 GB
+Memory usage after optimizer step:   | mem_allocated: 7.2427 GB | max_mem_allocated: 8.1439 GB | cache_allocated: 9.0430 GB | max_cache_allocated: 9.0430 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 6.3096 GB | max_mem_allocated: 8.1439 GB | cache_allocated: 9.0430 GB | max_cache_allocated: 9.0430 GB
+Training step:  1
+Memory usage after forward pass:   | mem_allocated: 8.6881 GB | max_mem_allocated: 8.7638 GB | cache_allocated: 9.6484 GB | max_cache_allocated: 9.6484 GB
+Memory usage after backward pass:   | mem_allocated: 7.2330 GB | max_mem_allocated: 8.7638 GB | cache_allocated: 9.6738 GB | max_cache_allocated: 9.6738 GB
+Memory usage after forward pass:   | mem_allocated: 9.6046 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1699 GB | max_cache_allocated: 10.1699 GB
+Memory usage after backward pass:   | mem_allocated: 7.2330 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after optimizer step:   | mem_allocated: 7.2323 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 6.3096 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Training step:  2
+Memory usage after forward pass:   | mem_allocated: 8.6884 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after backward pass:   | mem_allocated: 7.2317 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after forward pass:   | mem_allocated: 9.6049 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after backward pass:   | mem_allocated: 7.2317 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after optimizer step:   | mem_allocated: 7.2309 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 6.3096 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Training step:  3
+Memory usage after forward pass:   | mem_allocated: 8.1082 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after backward pass:   | mem_allocated: 7.2342 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after forward pass:   | mem_allocated: 8.5816 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after backward pass:   | mem_allocated: 7.2341 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after optimizer step:   | mem_allocated: 7.2336 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 6.3096 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Training step:  4
+Memory usage after forward pass:   | mem_allocated: 8.6884 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after backward pass:   | mem_allocated: 7.2317 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after forward pass:   | mem_allocated: 8.8268 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after backward pass:   | mem_allocated: 7.2314 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after optimizer step:   | mem_allocated: 7.2309 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 6.3096 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Training step:  5
+Memory usage after forward pass:   | mem_allocated: 8.6884 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after backward pass:   | mem_allocated: 7.2317 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after forward pass:   | mem_allocated: 8.5780 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after backward pass:   | mem_allocated: 7.2314 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after optimizer step:   | mem_allocated: 7.2309 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 6.3096 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Training step:  6
+Memory usage after forward pass:   | mem_allocated: 7.9013 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after backward pass:   | mem_allocated: 7.2313 GB | max_mem_allocated: 9.6855 GB | cache_allocated: 10.1895 GB | max_cache_allocated: 10.1895 GB
+Memory usage after forward pass:   | mem_allocated: 9.6112 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after backward pass:   | mem_allocated: 7.2316 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after optimizer step:   | mem_allocated: 7.2308 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 6.3096 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Training step:  7
+Memory usage after forward pass:   | mem_allocated: 7.9013 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after backward pass:   | mem_allocated: 7.2313 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after forward pass:   | mem_allocated: 9.3154 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after backward pass:   | mem_allocated: 7.2315 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after optimizer step:   | mem_allocated: 7.2308 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 6.3096 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Training step:  8
+Memory usage after forward pass:   | mem_allocated: 8.3958 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after backward pass:   | mem_allocated: 7.2501 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after forward pass:   | mem_allocated: 9.0503 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after backward pass:   | mem_allocated: 7.2500 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after optimizer step:   | mem_allocated: 7.2494 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 6.3096 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Training step:  9
+STAGE:2024-06-24 02:55:22 2830733:2830733 ActivityProfilerController.cpp:314] Completed Stage: Warm Up
+Memory usage after forward pass:   | mem_allocated: 7.7719 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after backward pass:   | mem_allocated: 7.3519 GB | max_mem_allocated: 9.6870 GB | cache_allocated: 10.1992 GB | max_cache_allocated: 10.1992 GB
+Memory usage after forward pass:   | mem_allocated: 9.8576 GB | max_mem_allocated: 9.8705 GB | cache_allocated: 10.4395 GB | max_cache_allocated: 10.4395 GB
+Memory usage after backward pass:   | mem_allocated: 7.4842 GB | max_mem_allocated: 9.8705 GB | cache_allocated: 10.4395 GB | max_cache_allocated: 10.4395 GB
+Memory usage after optimizer step:   | mem_allocated: 7.4834 GB | max_mem_allocated: 9.8705 GB | cache_allocated: 10.4395 GB | max_cache_allocated: 10.4395 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 6.5556 GB | max_mem_allocated: 9.8705 GB | cache_allocated: 10.4395 GB | max_cache_allocated: 10.4395 GB
+Training step:  10
+Memory usage after forward pass:   | mem_allocated: 7.2631 GB | max_mem_allocated: 9.8705 GB | cache_allocated: 10.4395 GB | max_cache_allocated: 10.4395 GB
+Memory usage after backward pass:   | mem_allocated: 7.5265 GB | max_mem_allocated: 9.8705 GB | cache_allocated: 10.4395 GB | max_cache_allocated: 10.4395 GB
+Memory usage after forward pass:   | mem_allocated: 10.0312 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6152 GB | max_cache_allocated: 10.6152 GB
+Memory usage after backward pass:   | mem_allocated: 7.6588 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after optimizer step:   | mem_allocated: 7.6580 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 6.7505 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Training step:  11
+Memory usage after forward pass:   | mem_allocated: 9.2586 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after backward pass:   | mem_allocated: 7.8106 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after forward pass:   | mem_allocated: 9.7406 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after backward pass:   | mem_allocated: 7.9335 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after optimizer step:   | mem_allocated: 7.9329 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 7.0058 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Training step:  12
+Memory usage after forward pass:   | mem_allocated: 8.2668 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after backward pass:   | mem_allocated: 8.0390 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after forward pass:   | mem_allocated: 9.7538 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after backward pass:   | mem_allocated: 8.1539 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after optimizer step:   | mem_allocated: 8.1534 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 7.2293 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Training step:  13
+Memory usage after forward pass:   | mem_allocated: 9.4537 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after backward pass:   | mem_allocated: 8.2942 GB | max_mem_allocated: 10.0435 GB | cache_allocated: 10.6348 GB | max_cache_allocated: 10.6348 GB
+Memory usage after forward pass:   | mem_allocated: 10.8046 GB | max_mem_allocated: 10.8169 GB | cache_allocated: 11.4219 GB | max_cache_allocated: 11.4219 GB
+Memory usage after backward pass:   | mem_allocated: 8.4267 GB | max_mem_allocated: 10.8169 GB | cache_allocated: 11.4668 GB | max_cache_allocated: 11.4668 GB
+Memory usage after optimizer step:   | mem_allocated: 8.4260 GB | max_mem_allocated: 10.8169 GB | cache_allocated: 11.4668 GB | max_cache_allocated: 11.4668 GB
+Memory usage after optimizer step zero grad:   | mem_allocated: 7.4890 GB | max_mem_allocated: 10.8169 GB | cache_allocated: 11.4668 GB | max_cache_allocated: 11.4668 GB
