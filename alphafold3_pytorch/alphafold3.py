@@ -125,6 +125,9 @@ def pack_one(t, pattern):
 def unpack_one(t, ps, pattern):
     return unpack(t, ps, pattern)[0]
 
+def exclusive_cumsum(t, dim = -1):
+    return t.cumsum(dim = dim) - t
+
 # decorators
 
 def maybe(fn):
@@ -263,8 +266,7 @@ def repeat_consecutive_with_lens(
     window_size = mask.shape[-1]
     arange = torch.arange(window_size, device = device)
 
-    cumsum_len = lens.cumsum(dim = -1)
-    offsets = F.pad(cumsum_len, (1, -1), value = 0)
+    offsets = exclusive_cumsum(lens)
     indices = einx.add('w, b n -> b n w', arange, offsets)
 
     # create output tensor + a sink position on the very right (index max_len)
@@ -1906,7 +1908,7 @@ class DiffusionModule(Module):
 
         tokens = self.cond_tokens_with_cond_single(conditioned_single_repr) + tokens
 
-        self.token_transformer(
+        tokens = self.token_transformer(
             tokens,
             mask = mask,
             single_repr = conditioned_single_repr,
@@ -3220,7 +3222,7 @@ class Alphafold3(Module):
         atom_ids: Int['b m'] | None = None,
         atompair_ids: Int['b m m'] | Int['b nw w1 w2'] | None = None,
         atom_mask: Bool['b m'] | None = None,
-        token_bond: Bool['b n n'] | None = None,
+        token_bonds: Bool['b n n'] | None = None,
         msa: Float['b s n d'] | None = None,
         msa_mask: Bool['b s'] | None = None,
         templates: Float['b t n n dt'] | None = None,
@@ -3271,7 +3273,7 @@ class Alphafold3(Module):
         # handle offsets for molecule atom indices
 
         if exists(molecule_atom_indices):
-            molecule_atom_indices = molecule_atom_indices + F.pad(molecule_atom_lens.cumsum(dim = -1), (1, -1), value = 0)
+            molecule_atom_indices = molecule_atom_indices + exclusive_cumsum(molecule_atom_lens)
 
         # get atom sequence length and molecule sequence length depending on whether using packed atomic seq
 
@@ -3321,21 +3323,21 @@ class Alphafold3(Module):
 
         # token bond features
 
-        if exists(token_bond):
+        if exists(token_bonds):
             # well do some precautionary standardization
             # (1) mask out diagonal - token to itself does not count as a bond
             # (2) symmetrize, in case it is not already symmetrical (could also throw an error)
 
-            token_bond = token_bond | rearrange(token_bond, 'b i j -> b j i')
+            token_bonds = token_bonds | rearrange(token_bonds, 'b i j -> b j i')
             diagonal = torch.eye(seq_len, device = self.device, dtype = torch.bool)
-            token_bond = token_bond.masked_fill(diagonal, False)
+            token_bonds = token_bonds.masked_fill(diagonal, False)
         else:
             seq_arange = torch.arange(seq_len, device = self.device)
-            token_bond = einx.subtract('i, j -> i j', seq_arange, seq_arange).abs() == 1
+            token_bonds = einx.subtract('i, j -> i j', seq_arange, seq_arange).abs() == 1
 
-        token_bond_feats = self.token_bond_to_pairwise_feat(token_bond.float())
+        token_bonds_feats = self.token_bond_to_pairwise_feat(token_bonds.float())
 
-        pairwise_init = pairwise_init + token_bond_feats
+        pairwise_init = pairwise_init + token_bonds_feats
 
         # molecule mask and pairwise mask
 
