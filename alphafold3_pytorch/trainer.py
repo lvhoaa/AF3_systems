@@ -544,7 +544,7 @@ class Trainer:
             # clip gradients
 
             self.fabric.clip_gradients(self.model, self.optimizer, max_norm = self.clip_grad_norm)
-
+            
             # optimizer step
 
             self.optimizer.step()

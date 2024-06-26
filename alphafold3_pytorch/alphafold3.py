@@ -52,7 +52,6 @@ from tqdm import tqdm
 from importlib.metadata import version
 
 from huggingface_hub import PyTorchModelHubMixin, hf_hub_download
-# from mmengine.model import BaseModel
 
 """
 global ein notation:
@@ -3421,19 +3420,19 @@ class Alphafold3(Module):
 
         # if neither atom positions or any labels are passed in, sample a structure and return
 
-        if not return_loss:
-            return self.edm.sample(
-                num_sample_steps = num_sample_steps,
-                atom_feats = atom_feats,
-                atompair_feats = atompair_feats,
-                atom_mask = atom_mask,
-                mask = mask,
-                single_trunk_repr = single,
-                single_inputs_repr = single_inputs,
-                pairwise_trunk = pairwise,
-                pairwise_rel_pos_feats = relative_position_encoding,
-                molecule_atom_lens = molecule_atom_lens
-            )
+        # if not return_loss:
+        #     return self.edm.sample(
+        #         num_sample_steps = num_sample_steps,
+        #         atom_feats = atom_feats,
+        #         atompair_feats = atompair_feats,
+        #         atom_mask = atom_mask,
+        #         mask = mask,
+        #         single_trunk_repr = single,
+        #         single_inputs_repr = single_inputs,
+        #         pairwise_trunk = pairwise,
+        #         pairwise_rel_pos_feats = relative_position_encoding,
+        #         molecule_atom_lens = molecule_atom_lens
+        #     )
 
         # if being forced to return loss, but do not have sufficient information to return losses, just return 0
 
@@ -3556,6 +3555,7 @@ class Alphafold3(Module):
                 molecule_atom_lens = molecule_atom_lens,
                 return_denoised_pos = True,
             )
+            
 
         # confidence head
 

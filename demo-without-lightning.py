@@ -1,4 +1,5 @@
-# This code uses Pytorch profiler to profile performance but no memory profiler
+# This code uses Pytorch profiler to profile performance and memory profiler to get memory consumption 
+# Code version with raw Pytorch (without Pytorch lightning & Fabric)
 
 from __future__ import annotations
 import torch
@@ -30,13 +31,40 @@ from torch.optim import Adam, Optimizer
 from torch.utils.data import Dataset, DataLoader as OrigDataLoader
 from torch.optim.lr_scheduler import LambdaLR, LRScheduler
 from ema_pytorch import EMA
-from lightning import Fabric
-from lightning.fabric.wrappers import _unwrap_objects
+# from lightning import Fabric
+# from lightning.fabric.wrappers import _unwrap_objects
 from shortuuid import uuid
-# from torch.autograd.profiler import record_function
-# import logging
-# import socket
-# from datetime import datetime, timedelta
+from torch.autograd.profiler import record_function
+import logging
+import socket
+from datetime import datetime, timedelta
+import matplotlib
+from thop import profile
+from deepspeed.utils.timer import SynchronizedWallClockTimer 
+import os 
+
+# Memory profiler configs
+logging.basicConfig(
+   format="%(levelname)s:%(asctime)s %(message)s",
+   level=logging.INFO,
+   datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger: logging.Logger = logging.getLogger(__name__)
+logger.setLevel(level=logging.INFO)
+
+TIME_FORMAT_STR: str = "%b_%d_%H_%M_%S"
+
+def trace_handler(prof: torch.profiler.profile):
+   # Prefix for file names.
+   host_name = socket.gethostname()
+   timestamp = datetime.now().strftime(TIME_FORMAT_STR)
+   file_prefix = f"{host_name}_{timestamp}"
+
+    # Construct the memory timeline file.
+   prof.export_memory_timeline(f"{file_prefix}.html")
+
+   # Construct the trace file -- profile compute performance 
+   prof.export_chrome_trace(f"{file_prefix}.json.gz")
 
 # Class Trainer, tweaked from trainer.py 
 def exists(val):
@@ -225,24 +253,24 @@ class Trainer:
         ),
         clip_grad_norm = 10.,
         default_lambda_lr = default_lambda_lr_fn,
-        fabric: Fabric | None = None,
+        # fabric: Fabric | None = None,
         accelerator = 'auto',
         checkpoint_prefix = 'af3.ckpt.',
         checkpoint_every: int = 1000,
         checkpoint_folder: str = './checkpoints',
         overwrite_checkpoints: bool = False,
-        fabric_kwargs: dict = dict(),
+        # fabric_kwargs: dict = dict(),
         ema_kwargs: dict = dict(
             use_foreach = True
         )
     ):
         super().__init__()
 
-        if not exists(fabric):
-            fabric = Fabric(accelerator = accelerator, **fabric_kwargs)
+        # if not exists(fabric):
+        #     fabric = Fabric(accelerator = accelerator, **fabric_kwargs)
 
-        self.fabric = fabric
-        fabric.launch()
+        # self.fabric = fabric
+        # fabric.launch()
 
         # model
 
@@ -251,13 +279,13 @@ class Trainer:
 
         # exponential moving average
 
-        if self.is_main:
-            self.ema_model = EMA(
-                model,
-                beta = ema_decay,
-                include_online_model = False,
-                **ema_kwargs
-            )
+        # if self.is_main:
+        #     self.ema_model = EMA(
+        #         model,
+        #         beta = ema_decay,
+        #         include_online_model = False,
+        #         **ema_kwargs
+        #     )
 
         # optimizer
 
@@ -280,24 +308,6 @@ class Trainer:
         # train dataloader
         self.dataloader = DataLoader_(dataset, batch_size = batch_size, shuffle = True, drop_last = True)
 
-        # # validation dataloader on the EMA model
-
-        # self.valid_every = valid_every
-
-        # self.needs_valid = exists(valid_dataset)
-
-        # if self.needs_valid and self.is_main:
-        #     self.valid_dataset_size = len(valid_dataset)
-        #     self.valid_dataloader = DataLoader_(valid_dataset, batch_size = batch_size)
-
-        # # testing dataloader on EMA model
-
-        # self.needs_test = exists(test_dataset)
-
-        # if self.needs_test and self.is_main:
-        #     self.test_dataset_size = len(test_dataset)
-        #     self.test_dataloader = DataLoader_(test_dataset, batch_size = batch_size)
-
         # training steps and num gradient accum steps
 
         self.num_train_steps = num_train_steps
@@ -305,9 +315,9 @@ class Trainer:
 
         # setup fabric
 
-        self.model, self.optimizer = fabric.setup(self.model, self.optimizer)
+        # self.model, self.optimizer = fabric.setup(self.model, self.optimizer)
 
-        fabric.setup_dataloaders(self.dataloader)
+        # fabric.setup_dataloaders(self.dataloader)
 
         # scheduler
 
@@ -341,9 +351,9 @@ class Trainer:
         self.last_loaded_train_id = None
         self.model_loaded_from_path: Path | None = None
 
-    @property
-    def is_main(self):
-        return self.fabric.global_rank == 0
+    # @property
+    # def is_main(self):
+        # return self.fabric.global_rank == 0
 
     def generate_train_id(self):
         if exists(self.train_id):
@@ -464,18 +474,22 @@ class Trainer:
 
     # shortcut methods
 
-    def wait(self):
-        self.fabric.barrier()
+    # def wait(self):
+    #     self.fabric.barrier()
 
     def print(self, *args, **kwargs):
-        self.fabric.print(*args, **kwargs)
+        # self.fabric.print(*args, **kwargs)
+        print(*args, **kwargs)
 
-    def log(self, **log_data):
-        self.fabric.log_dict(log_data, step = self.steps)
+    # def log(self, **log_data):
+    #     self.fabric.log_dict(log_data, step = self.steps)
+        
 
     # main train forwards
 
     def __call__(self):
+        
+        print("Memory usage after model initialization: ", SynchronizedWallClockTimer.memory_usage())
         
         self.generate_train_id()
 
@@ -483,9 +497,12 @@ class Trainer:
         dl = cycle(self.dataloader)
 
         with torch.profiler.profile(
+            activities=[
+                torch.profiler.ProfilerActivity.CPU,
+                torch.profiler.ProfilerActivity.CUDA,
+            ],
             schedule=torch.profiler.schedule(wait=0, warmup=1, active=2, repeat=1),
-            # schedule=torch.profiler.schedule(wait=1, warmup=11, active=3, repeat=1),
-            on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/fold'),
+            on_trace_ready=trace_handler,
             record_shapes=True,
             profile_memory=True,
             with_stack=True,
@@ -497,7 +514,7 @@ class Trainer:
                 prof.step()  # Need to call this at each step to notify profiler of steps' boundary.
                 
                 self.model.train()
-
+                
                 # gradient accumulation
                 total_loss = 0.
                 train_loss_breakdown = None
@@ -505,12 +522,15 @@ class Trainer:
                 for grad_accum_step in range(self.grad_accum_every):
                     is_accumulating = grad_accum_step < (self.grad_accum_every - 1)
                     inputs = next(dl)
-                    inputs = move_to_device(inputs, 'cuda') # move single batch to gpu 
                     
+                    # print(torch.cuda.memory_summary(device=None, abbreviated=False))
+                    # print('inputs memory size: ', sys.getsizeof(inputs))
                     
-                    with self.fabric.no_backward_sync(self.model, enabled = is_accumulating):
-                        # with record_function("## forward ##"):
-                            # model forwards
+                    inputs = move_to_device(inputs, 'cuda') # move single batch to gpu                      
+                                        
+                    # with self.fabric.no_backward_sync(self.model, enabled = is_accumulating):
+                    with record_function("## forward ##"):
+                        # model forwards
                         loss, loss_breakdown = self.model(
                             molecule_atom_lens = inputs["molecule_atom_lens"],
                             atom_inputs = inputs["atom_inputs"],
@@ -529,131 +549,151 @@ class Trainer:
                             plddt_labels = inputs["plddt_labels"],
                             resolved_labels = inputs["resolved_labels"],
                             return_loss_breakdown = True
-                        )                                                       
+                        )
+                        print("Memory usage after forward pass: ", SynchronizedWallClockTimer.memory_usage())
+                                                    
+                        # multiply the sum of all parameters with zero and add it to the final loss
+                        # loss += sum(torch.sum(param) for param in self.model.parameters()) * 0
+
                         # accumulate
                         scale = self.grad_accum_every ** -1
                         total_loss += loss.item() * scale
-                        train_loss_breakdown = accum_dict(train_loss_breakdown, loss_breakdown._asdict(), scale = scale)
-                            
-                        # with record_function("## backward ##"):
-                        # backwards
-                        self.fabric.backward(loss / self.grad_accum_every)
+                        train_loss_breakdown = accum_dict(train_loss_breakdown, loss_breakdown._asdict(), scale = scale)                           
                         
-                        # Try to free out part of the memory
-                        # del inputs
+                    with record_function("## backward ##"):
+                        # backwards
+                        # self.fabric.backward(loss / self.grad_accum_every)
+                        (loss / self.grad_accum_every).backward()
+                        print("Memory usage after backward pass: ", SynchronizedWallClockTimer.memory_usage())
 
                 # log entire loss breakdown
-                self.log(**train_loss_breakdown)
+                # self.log(**train_loss_breakdown)
                 self.print(f'loss: {total_loss:.3f}')
 
                 # clip gradients
-                self.fabric.clip_gradients(self.model, self.optimizer, max_norm = self.clip_grad_norm)
+                # self.fabric.clip_gradients(self.model, self.optimizer, max_norm = self.clip_grad_norm)
+                torch.nn.utils.clip_grad_norm_(parameters = self.model.parameters(), max_norm = self.clip_grad_norm)
+                
+                with record_function("## optimizer ##"):
 
-                # with record_function("## optimizer ##"):
+                    # optimizer step
+                    self.optimizer.step()
+                    
+                    # update exponential moving average
+                    # self.wait()
+                    # if self.is_main:
+                    #     self.ema_model.update()
+                    # self.wait()
 
-                # optimizer step
-                self.optimizer.step()
-
-                # update exponential moving average
-                self.wait()
-                if self.is_main:
-                    self.ema_model.update()
-                self.wait()
-
-                # scheduler
-                self.scheduler.step()
-                self.optimizer.zero_grad()
-
+                    # scheduler
+                    self.scheduler.step()
+                    self.optimizer.zero_grad()
+                    print("Memory usage after optimizer step zero grad: ", SynchronizedWallClockTimer.memory_usage())
+                    
                 self.steps += 1
-
-                # # maybe validate, for now, only on main with EMA model
-
-                # if (
-                #     self.is_main and
-                #     self.needs_valid and
-                #     divisible_by(self.steps, self.valid_every)
-                # ):
-                #     with torch.no_grad():
-                #         self.ema_model.eval()
-
-                #         total_valid_loss = 0.
-                #         valid_loss_breakdown = None
-
-                #         for valid_batch in self.valid_dataloader:
-                #             valid_loss, loss_breakdown = self.ema_model(
-                #                 **valid_batch,
-                #                 return_loss_breakdown = True
-                #             )
-
-                #             valid_batch_size = valid_batch.get('atom_inputs').shape[0]
-                #             scale = valid_batch_size / self.valid_dataset_size
-
-                #             total_valid_loss += valid_loss.item() * scale
-                #             valid_loss_breakdown = accum_dict(valid_loss_breakdown, loss_breakdown._asdict(), scale = scale)
-
-                #         self.print(f'valid loss: {total_valid_loss:.3f}')
-
-                #     # prepend valid_ to all losses for logging
-
-                #     valid_loss_breakdown = {f'valid_{k}':v for k, v in valid_loss_breakdown.items()}
-
-                #     # log
-
-                #     self.log(**valid_loss_breakdown)
-
-                # self.wait()
-
-                # if self.is_main and divisible_by(self.steps, self.checkpoint_every):
-                #     self.save_checkpoint()
-
-                # self.wait()
-
-            # # maybe test
-
-            # if self.is_main and self.needs_test:
-            #     with torch.no_grad():
-            #         self.ema_model.eval()
-
-            #         total_test_loss = 0.
-            #         test_loss_breakdown = None
-
-            #         for test_batch in self.test_dataloader:
-            #             test_loss, loss_breakdown = self.ema_model(
-            #                 **test_batch,
-            #                 return_loss_breakdown = True
-            #             )
-
-            #             test_batch_size = test_batch.get('atom_inputs').shape[0]
-            #             scale = test_batch_size / self.test_dataset_size
-
-            #             total_test_loss += test_loss.item() * scale
-            #             test_loss_breakdown = accum_dict(test_loss_breakdown, loss_breakdown._asdict(), scale = scale)
-
-            #         self.print(f'test loss: {total_test_loss:.3f}')
-
-            #     # prepend test_ to all losses for logging
-
-            #     test_loss_breakdown = {f'test_{k}':v for k, v in test_loss_breakdown.items()}
-
-            #     # log
-
-            #     self.log(**test_loss_breakdown)
-
         print('training complete')
 
+def calculate_model_size(alphafold3, dataset):
+    # Measuring MACs and #Parameters
+    # Use thop to measure # params and MACs 
+    print('Using THOP')
+    alphafold3.to('cuda')
+    dl = cycle(DataLoader(dataset, batch_size = 1, shuffle = True, drop_last = True))
+    inputs = next(dl)
+    inputs = move_to_device(inputs, 'cuda')
+    macs, params, thopDict = profile(model =alphafold3, inputs=inputs, ret_layer_info = True)
+    print("Model size: macs", macs, " Params: ", params)
+    
+    # param.numel()
+    print('Using param.numel()')
+    total_params = 0 
+    numelDict = {} 
+    for name, param in alphafold3.named_parameters():
+        val = param.numel()
+        numelDict[name] = val 
+        total_params += val
+    print("Total params of model: ", total_params)
+    
+    # preprocessing numelDict
+    toBeDeleted = [] 
+    toBeAdded = []
+    for key in numelDict:
+        if key[-6:] == "weight" and key[0:-6] + "bias" in numelDict:
+            prefix = key[0:-7]
+            toBeAdded.append((prefix, numelDict[key] + numelDict[key[0:-6] + "bias"]))
+            toBeDeleted.append(key)
+            toBeDeleted.append(key[0:-6] + "bias")
+        elif key[-6:] == "weight":
+            toBeDeleted.append(key)
+            toBeAdded.append((key[0:-7], numelDict[key]))
+    for key in toBeDeleted:
+        del numelDict[key]
+    for key, val in toBeAdded:
+        numelDict[key] = val
+    
+    # preprocessing thopDict -> thopValues
+    # dfs helper function
+    def dfs(currDict, prefix, storeDict):
+        for key in currDict:
+            if len(currDict[key][2]) == 0:
+                # end dfs
+                # Note: 0 is total_ops; 1 is total_params
+                # Currently calculating total_ops
+                storeDict[prefix + key] = currDict[key][0]
+            else:
+                # continue push dfs
+                dfs(currDict[key][2], prefix + key + ".", storeDict)
+    
+    thopValues = {}
+    dfs(thopDict, "", thopValues)
+    
+    print('thopValues: ', thopValues)
+    print("===================================================")
+
+    # Log out operator differences:
+    #listKeys = set(numelDict.keys()).union(set(thopValues.keys()))
+    #for key in listKeys:
+    #    if numelDict.get(key, 0) != thopValues.get(key, 0):
+    #        print('operator: ', key, '; numelValue: ', numelDict.get(key, 0), '; THOPValue: ', thopValues.get(key, 0))
+    
 
 def demo():
+    # Full version of AlphaFold3 
     alphafold3 = Alphafold3(dim_atom_inputs = 77,dim_template_feats = 44)
+    
+    # Mini version: reduce all blocks depth to only 1 
+    # alphafold3 = Alphafold3(
+    #     dim_atom_inputs = 77,
+    #     dim_template_feats = 44,
+    #     num_dist_bins = 38,
+    #     confidence_head_kwargs = dict(
+    #         pairformer_depth = 1
+    #     ),
+    #     template_embedder_kwargs = dict(
+    #         pairformer_stack_depth = 1
+    #     ),
+    #     msa_module_kwargs = dict(
+    #         depth = 1
+    #     ),
+    #     pairformer_stack = dict(
+    #         depth = 1
+    #     ),
+    #     diffusion_module_kwargs = dict(
+    #         atom_encoder_depth = 1,
+    #         token_transformer_depth = 1,
+    #         atom_decoder_depth = 1,
+    #     ),
+    # )
+    
     dataset = MockAtomDataset(8)
     
     trainer = Trainer(
         model = alphafold3,
         dataset = dataset,
         num_train_steps = 3,
-        # num_train_steps = 15,
-        batch_size = 1,
+        batch_size = 4,
         valid_every = 1,
-        grad_accum_every = 2,
+        grad_accum_every = 1,
         checkpoint_every = 1,
         overwrite_checkpoints = True,
         ema_kwargs = dict(
@@ -665,10 +705,10 @@ def demo():
 
     trainer()
     
-
+    # calculate_model_size(alphafold3, dataset)
+    
+        
 if __name__ == "__main__":
     print('Starting to run demo')
     demo()
     print('Finished demo')
-    
-    

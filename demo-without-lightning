@@ -1,0 +1,3 @@
+NOTE:
+
+- Comment out self.is_main() and self.ema_model (This exponential moving average is used for inference)
