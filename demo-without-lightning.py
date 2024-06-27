@@ -41,7 +41,6 @@ from datetime import datetime, timedelta
 import matplotlib
 from thop import profile
 from deepspeed.utils.timer import SynchronizedWallClockTimer 
-import os 
 
 # Memory profiler configs
 logging.basicConfig(
@@ -275,7 +274,6 @@ class Trainer:
         # model
 
         self.model = model
-        self.model.to('cuda') # move model to cuda
 
         # exponential moving average
 
@@ -489,7 +487,6 @@ class Trainer:
 
     def __call__(self):
         
-        print("Memory usage after model initialization: ", SynchronizedWallClockTimer.memory_usage())
         
         self.generate_train_id()
 
@@ -501,7 +498,7 @@ class Trainer:
                 torch.profiler.ProfilerActivity.CPU,
                 torch.profiler.ProfilerActivity.CUDA,
             ],
-            schedule=torch.profiler.schedule(wait=0, warmup=1, active=2, repeat=1),
+            schedule=torch.profiler.schedule(wait=0, warmup=10, active=5, repeat=1),
             on_trace_ready=trace_handler,
             record_shapes=True,
             profile_memory=True,
@@ -522,10 +519,6 @@ class Trainer:
                 for grad_accum_step in range(self.grad_accum_every):
                     is_accumulating = grad_accum_step < (self.grad_accum_every - 1)
                     inputs = next(dl)
-                    
-                    # print(torch.cuda.memory_summary(device=None, abbreviated=False))
-                    # print('inputs memory size: ', sys.getsizeof(inputs))
-                    
                     inputs = move_to_device(inputs, 'cuda') # move single batch to gpu                      
                                         
                     # with self.fabric.no_backward_sync(self.model, enabled = is_accumulating):
@@ -551,7 +544,7 @@ class Trainer:
                             return_loss_breakdown = True
                         )
                         print("Memory usage after forward pass: ", SynchronizedWallClockTimer.memory_usage())
-                                                    
+                                                
                         # multiply the sum of all parameters with zero and add it to the final loss
                         # loss += sum(torch.sum(param) for param in self.model.parameters()) * 0
 
@@ -685,13 +678,16 @@ def demo():
     #     ),
     # )
     
+    alphafold3.to('cuda')
+    print("Memory usage after model initialization: ", SynchronizedWallClockTimer.memory_usage())
+    
     dataset = MockAtomDataset(8)
     
     trainer = Trainer(
         model = alphafold3,
         dataset = dataset,
-        num_train_steps = 3,
-        batch_size = 4,
+        num_train_steps = 15,
+        batch_size = 1,
         valid_every = 1,
         grad_accum_every = 1,
         checkpoint_every = 1,

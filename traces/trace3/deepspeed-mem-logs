@@ -1,0 +1,79 @@
+Memory usage after model initialization:   | mem_allocated: 1.9121 GB | max_mem_allocated: 1.9121 GB | cache_allocated: 1.9922 GB | max_cache_allocated: 1.9922 GB
+Training step:  0
+/u/hla/.conda/envs/env_alphafold/lib/python3.10/site-packages/torch/backends/cuda/__init__.py:342: FutureWarning: torch.backends.cuda.sdp_kernel() is deprecated. In the future, this context manager will be removed. Please see, torch.nn.attention.sdpa_kernel() for the new context manager, with updated signature.
+  warnings.warn(
+Memory usage after forward pass:   | mem_allocated: 2.1811 GB | max_mem_allocated: 2.1817 GB | cache_allocated: 2.2754 GB | max_cache_allocated: 2.2754 GB
+Memory usage after backward pass:   | mem_allocated: 3.8326 GB | max_mem_allocated: 3.8399 GB | cache_allocated: 4.0918 GB | max_cache_allocated: 4.0918 GB
+loss: 15.292
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.7290 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.7988 GB | max_cache_allocated: 9.7988 GB
+Training step:  1
+Memory usage after forward pass:   | mem_allocated: 5.8957 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.7988 GB | max_cache_allocated: 9.7988 GB
+Memory usage after backward pass:   | mem_allocated: 7.6534 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.7988 GB | max_cache_allocated: 9.7988 GB
+loss: 17.173
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.7290 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.8105 GB | max_cache_allocated: 9.8105 GB
+Training step:  2
+Memory usage after forward pass:   | mem_allocated: 5.8957 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.8105 GB | max_cache_allocated: 9.8105 GB
+Memory usage after backward pass:   | mem_allocated: 7.6534 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.8105 GB | max_cache_allocated: 9.8105 GB
+loss: 15.481
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.7290 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.8105 GB | max_cache_allocated: 9.8105 GB
+Training step:  3
+Memory usage after forward pass:   | mem_allocated: 6.0939 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.8789 GB | max_cache_allocated: 9.8789 GB
+Memory usage after backward pass:   | mem_allocated: 7.6535 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.8809 GB | max_cache_allocated: 9.8809 GB
+loss: 14.290
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.7290 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.8809 GB | max_cache_allocated: 9.8809 GB
+Training step:  4
+Memory usage after forward pass:   | mem_allocated: 5.9899 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.8809 GB | max_cache_allocated: 9.8809 GB
+Memory usage after backward pass:   | mem_allocated: 7.6535 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.8809 GB | max_cache_allocated: 9.8809 GB
+loss: 12.802
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.7290 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.8809 GB | max_cache_allocated: 9.8809 GB
+Training step:  5
+Memory usage after forward pass:   | mem_allocated: 6.1502 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.9375 GB | max_cache_allocated: 9.9375 GB
+Memory usage after backward pass:   | mem_allocated: 7.6535 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.9375 GB | max_cache_allocated: 9.9375 GB
+loss: 16.087
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.7290 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.9375 GB | max_cache_allocated: 9.9375 GB
+Training step:  6
+Memory usage after forward pass:   | mem_allocated: 5.9449 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.9375 GB | max_cache_allocated: 9.9375 GB
+Memory usage after backward pass:   | mem_allocated: 7.6534 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.9375 GB | max_cache_allocated: 9.9375 GB
+loss: 15.905
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.7290 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.9375 GB | max_cache_allocated: 9.9375 GB
+Training step:  7
+Memory usage after forward pass:   | mem_allocated: 6.1502 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.9375 GB | max_cache_allocated: 9.9375 GB
+Memory usage after backward pass:   | mem_allocated: 7.6535 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.9375 GB | max_cache_allocated: 9.9375 GB
+loss: 15.702
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.7290 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.9375 GB | max_cache_allocated: 9.9375 GB
+Training step:  8
+Memory usage after forward pass:   | mem_allocated: 6.2131 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.9785 GB | max_cache_allocated: 9.9785 GB
+Memory usage after backward pass:   | mem_allocated: 7.6634 GB | max_mem_allocated: 9.5549 GB | cache_allocated: 9.9785 GB | max_cache_allocated: 9.9785 GB
+loss: 15.244
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.7290 GB | max_mem_allocated: 9.5598 GB | cache_allocated: 9.9785 GB | max_cache_allocated: 9.9785 GB
+Training step:  9
+STAGE:2024-06-27 02:58:03 1213248:1213248 ActivityProfilerController.cpp:314] Completed Stage: Warm Up
+[W CPUAllocator.cpp:249] Memory block of unknown size was allocated before the profiling started, profiler results will not include the deallocation event
+Memory usage after forward pass:   | mem_allocated: 6.2391 GB | max_mem_allocated: 9.5598 GB | cache_allocated: 10.0020 GB | max_cache_allocated: 10.0020 GB
+Memory usage after backward pass:   | mem_allocated: 7.6894 GB | max_mem_allocated: 9.5598 GB | cache_allocated: 10.0020 GB | max_cache_allocated: 10.0020 GB
+loss: 14.653
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.7551 GB | max_mem_allocated: 9.5858 GB | cache_allocated: 10.0020 GB | max_cache_allocated: 10.0020 GB
+Training step:  10
+Memory usage after forward pass:   | mem_allocated: 6.1415 GB | max_mem_allocated: 9.5858 GB | cache_allocated: 10.0020 GB | max_cache_allocated: 10.0020 GB
+Memory usage after backward pass:   | mem_allocated: 7.7011 GB | max_mem_allocated: 9.5858 GB | cache_allocated: 10.0020 GB | max_cache_allocated: 10.0020 GB
+loss: 14.754
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.7766 GB | max_mem_allocated: 9.5976 GB | cache_allocated: 10.0020 GB | max_cache_allocated: 10.0020 GB
+Training step:  11
+Memory usage after forward pass:   | mem_allocated: 6.3655 GB | max_mem_allocated: 9.5976 GB | cache_allocated: 10.1172 GB | max_cache_allocated: 10.1172 GB
+Memory usage after backward pass:   | mem_allocated: 7.7295 GB | max_mem_allocated: 9.5976 GB | cache_allocated: 10.1172 GB | max_cache_allocated: 10.1172 GB
+loss: 15.896
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.8050 GB | max_mem_allocated: 9.6301 GB | cache_allocated: 10.1172 GB | max_cache_allocated: 10.1172 GB
+Training step:  12
+Memory usage after forward pass:   | mem_allocated: 5.9845 GB | max_mem_allocated: 9.6301 GB | cache_allocated: 10.1172 GB | max_cache_allocated: 10.1172 GB
+Memory usage after backward pass:   | mem_allocated: 7.7422 GB | max_mem_allocated: 9.6301 GB | cache_allocated: 10.1172 GB | max_cache_allocated: 10.1172 GB
+loss: 16.277
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.8178 GB | max_mem_allocated: 9.6387 GB | cache_allocated: 10.1172 GB | max_cache_allocated: 10.1172 GB
+Training step:  13
+Memory usage after forward pass:   | mem_allocated: 5.8676 GB | max_mem_allocated: 9.6387 GB | cache_allocated: 10.1172 GB | max_cache_allocated: 10.1172 GB
+Memory usage after backward pass:   | mem_allocated: 7.7468 GB | max_mem_allocated: 9.6387 GB | cache_allocated: 10.1172 GB | max_cache_allocated: 10.1172 GB
+loss: 10.602
+Memory usage after optimizer step zero grad:   | mem_allocated: 5.8223 GB | max_mem_allocated: 9.6433 GB | cache_allocated: 10.1172 GB | max_cache_allocated: 10.1172 GB
+Training step:  14
+STAGE:2024-06-27 02:58:52 1213248:1213248 ActivityProfilerController.cpp:320] Completed Stage: Collection
+STAGE:2024-06-27 02:58:55 1213248:1213248 ActivityProfilerController.cpp:324] Completed Stage: Post Processing
+Killed

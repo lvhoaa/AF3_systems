@@ -748,6 +748,9 @@ def demo():
     #     ),
     # )
     
+    #alphafold3.to('cuda')
+    #print("Memory usage after model initialization: ", SynchronizedWallClockTimer.memory_usage())
+    
     dataset = MockAtomDataset(8)
     
     trainer = Trainer(
