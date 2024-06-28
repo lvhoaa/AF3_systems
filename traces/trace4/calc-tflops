@@ -1,0 +1,83 @@
+Calculate TFLOPs (tera-flops per second) for each iteration of FULL AF3 training 
+
+- Batch size = 1 
+Number of MACs: 1,298,127,305,952 
+=> Tera-flops = ~2.5
+
++ Training step:  10
+Execution time for training iteration: 2.4s
+=> TFLOPS = 2.5/2.4 = 1.04
+
++ Training step:  11
+Execution time for training iteration: 2.8s
+=> TFLOPS = 2.5/2.8 = 0.89
+
++ Training step:  12
+Execution time for training iteration: 2.8s
+=> TFLOPS = 2.5/2.8 = 0.89
+
++ Training step:  13
+Execution time for training iteration: 2.8s
+=> TFLOPS = 2.5/2.8 = 0.89
+
++ Training step:  14
+Execution time for training iteration: 2.4s
+=> TFLOPS = 2.5/2.8 = 1.04
+
+=> Overall TFLOPS = ~1
+
+=====================================================
+
+- Batch size = 16
+Number of MACs: 22,283,275,497,088
+=> Tera-flops = ~45
+
++ Training step:  10
+Execution time for training iteration: 3.5s
+=> TFLOPS = 45/3.5 = 12.85
+
++ Training step:  11
+Execution time for training iteration: 3.2s
+=> TFLOPS = 45/3.2 = 14.06
+
++ Training step:  12
+Execution time for training iteration: 3.4s
+=> TFLOPS = 45/3.4 = 13.23
+
++ Training step:  13
+Execution time for training iteration: 3.2s
+=> TFLOPS = 45/3.2 = 14.06
+
++ Training step:  14
+Execution time for training iteration: 3.4s
+=> TFLOPS = 45/3.4 = 13.23
+
+=> Overall TFLOPS = ~ 13.5
+
+=====================================================
+
+- Batch size = 32
+Number of MACs: 44,566,550,965,376
+=> Tera-flops = ~90
+
++ Training step:  10
+Execution time for training iteration: 6s
+=> TFLOPS = 90/6 = 15
+
++ Training step:  11
+Execution time for training iteration: 6s
+=> TFLOPS = 90/6 = 15
+
++ Training step:  12
+Execution time for training iteration: 6s
+=> TFLOPS = 90/6 = 15
+
++ Training step:  13
+Execution time for training iteration: 6s
+=> TFLOPS = 90/6 = 15
+
++ Training step:  14
+Execution time for training iteration: 6s
+=> TFLOPS = 90/6 = 15
+
+=> Overall TFLOPS = ~ 15

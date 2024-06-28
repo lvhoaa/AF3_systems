@@ -1,0 +1,10 @@
+Execution time of different batch size for FULL AF3 model, training steps = 15 (seconds): 
+Size 1: 44.05
+Size 2: 44.5
+Size 4: 45.1
+Size 8: 45.3
+Size 16: 56.12
+Size 32: 102.03
+Size 40: 104.05
+Size 42: 105.6
+

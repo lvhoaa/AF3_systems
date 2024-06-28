@@ -43,27 +43,30 @@ from thop import profile
 from deepspeed.utils.timer import SynchronizedWallClockTimer 
 
 # Memory profiler configs
-logging.basicConfig(
-   format="%(levelname)s:%(asctime)s %(message)s",
-   level=logging.INFO,
-   datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger: logging.Logger = logging.getLogger(__name__)
-logger.setLevel(level=logging.INFO)
+# logging.basicConfig(
+#    format="%(levelname)s:%(asctime)s %(message)s",
+#    level=logging.INFO,
+#    datefmt="%Y-%m-%d %H:%M:%S",
+# )
+# logger: logging.Logger = logging.getLogger(__name__)
+# logger.setLevel(level=logging.INFO)
 
-TIME_FORMAT_STR: str = "%b_%d_%H_%M_%S"
+# TIME_FORMAT_STR: str = "%b_%d_%H_%M_%S"
 
-def trace_handler(prof: torch.profiler.profile):
-   # Prefix for file names.
-   host_name = socket.gethostname()
-   timestamp = datetime.now().strftime(TIME_FORMAT_STR)
-   file_prefix = f"{host_name}_{timestamp}"
+# def trace_handler(prof: torch.profiler.profile):
+#    # Prefix for file names.
+#    host_name = socket.gethostname()
+#    timestamp = datetime.now().strftime(TIME_FORMAT_STR)
+#    file_prefix = f"{host_name}_{timestamp}"
 
-    # Construct the memory timeline file.
-   prof.export_memory_timeline(f"{file_prefix}.html")
+#     # Construct the memory timeline file.
+#    prof.export_memory_timeline(f"{file_prefix}.html")
 
-   # Construct the trace file -- profile compute performance 
-   prof.export_chrome_trace(f"{file_prefix}.json.gz")
+#    # Construct the trace file -- profile compute performance 
+#    prof.export_chrome_trace(f"{file_prefix}.json.gz")
+
+alloc = []
+max_alloc = [] 
 
 # Class Trainer, tweaked from trainer.py 
 def exists(val):
@@ -493,136 +496,150 @@ class Trainer:
         # cycle through dataloader
         dl = cycle(self.dataloader)
 
-        with torch.profiler.profile(
-            activities=[
-                torch.profiler.ProfilerActivity.CPU,
-                torch.profiler.ProfilerActivity.CUDA,
-            ],
-            schedule=torch.profiler.schedule(wait=0, warmup=10, active=5, repeat=1),
-            on_trace_ready=trace_handler,
-            record_shapes=True,
-            profile_memory=True,
-            with_stack=True,
-        ) as prof:
-            # iterate training steps
-            while self.steps < self.num_train_steps:
-                print('Training step: ', self.steps)
-                
-                prof.step()  # Need to call this at each step to notify profiler of steps' boundary.
-                
-                self.model.train()
-                
-                # gradient accumulation
-                total_loss = 0.
-                train_loss_breakdown = None
+        # with torch.profiler.profile(
+        #     activities=[
+        #         torch.profiler.ProfilerActivity.CPU,
+        #         torch.profiler.ProfilerActivity.CUDA,
+        #     ],
+        #     schedule=torch.profiler.schedule(wait=0, warmup=10, active=5, repeat=1),
+        #     on_trace_ready=trace_handler,
+        #     record_shapes=True,
+        #     profile_memory=True,
+        #     with_stack=True,
+        # ) as prof:
+        # iterate training steps
+        while self.steps < self.num_train_steps:
+            print('Training step: ', self.steps)
+            
+            start_time = datetime.now()
+            # prof.step()  # Need to call this at each step to notify profiler of steps' boundary.
+            
+            self.model.train()
+            
+            # gradient accumulation
+            total_loss = 0.
+            train_loss_breakdown = None
 
-                for grad_accum_step in range(self.grad_accum_every):
-                    is_accumulating = grad_accum_step < (self.grad_accum_every - 1)
-                    inputs = next(dl)
-                    inputs = move_to_device(inputs, 'cuda') # move single batch to gpu                      
+            for grad_accum_step in range(self.grad_accum_every):
+                is_accumulating = grad_accum_step < (self.grad_accum_every - 1)
+                inputs = next(dl)
+                inputs = move_to_device(inputs, 'cuda') # move single batch to gpu                      
+                                
+                # with self.fabric.no_backward_sync(self.model, enabled = is_accumulating):
+                # with record_function("## forward ##"):
+                # model forwards
+                loss, loss_breakdown = self.model(
+                    molecule_atom_lens = inputs["molecule_atom_lens"],
+                    atom_inputs = inputs["atom_inputs"],
+                    atompair_inputs = inputs["atompair_inputs"],
+                    molecule_ids = inputs["molecule_ids"],
+                    additional_molecule_feats = inputs["additional_molecule_feats"],
+                    msa = inputs["msa"],
+                    msa_mask = inputs["msa_mask"],
+                    templates = inputs["templates"],
+                    template_mask = inputs["template_mask"],
+                    atom_pos = inputs["atom_pos"],
+                    molecule_atom_indices = inputs["molecule_atom_indices"],
+                    distance_labels = inputs["distance_labels"],
+                    pae_labels = inputs["pae_labels"],
+                    pde_labels = inputs["pde_labels"],
+                    plddt_labels = inputs["plddt_labels"],
+                    resolved_labels = inputs["resolved_labels"],
+                    return_loss_breakdown = True
+                )
+                mem_usage = SynchronizedWallClockTimer.memory_usage()
+                print("Memory usage after forward pass: ", mem_usage[2])
+                alloc.append(mem_usage[0])
+                max_alloc.append(mem_usage[1])
                                         
-                    # with self.fabric.no_backward_sync(self.model, enabled = is_accumulating):
-                    with record_function("## forward ##"):
-                        # model forwards
-                        loss, loss_breakdown = self.model(
-                            molecule_atom_lens = inputs["molecule_atom_lens"],
-                            atom_inputs = inputs["atom_inputs"],
-                            atompair_inputs = inputs["atompair_inputs"],
-                            molecule_ids = inputs["molecule_ids"],
-                            additional_molecule_feats = inputs["additional_molecule_feats"],
-                            msa = inputs["msa"],
-                            msa_mask = inputs["msa_mask"],
-                            templates = inputs["templates"],
-                            template_mask = inputs["template_mask"],
-                            atom_pos = inputs["atom_pos"],
-                            molecule_atom_indices = inputs["molecule_atom_indices"],
-                            distance_labels = inputs["distance_labels"],
-                            pae_labels = inputs["pae_labels"],
-                            pde_labels = inputs["pde_labels"],
-                            plddt_labels = inputs["plddt_labels"],
-                            resolved_labels = inputs["resolved_labels"],
-                            return_loss_breakdown = True
-                        )
-                        print("Memory usage after forward pass: ", SynchronizedWallClockTimer.memory_usage())
-                                                
-                        # multiply the sum of all parameters with zero and add it to the final loss
-                        # loss += sum(torch.sum(param) for param in self.model.parameters()) * 0
+                # multiply the sum of all parameters with zero and add it to the final loss
+                # loss += sum(torch.sum(param) for param in self.model.parameters()) * 0
 
-                        # accumulate
-                        scale = self.grad_accum_every ** -1
-                        total_loss += loss.item() * scale
-                        train_loss_breakdown = accum_dict(train_loss_breakdown, loss_breakdown._asdict(), scale = scale)                           
-                        
-                    with record_function("## backward ##"):
-                        # backwards
-                        # self.fabric.backward(loss / self.grad_accum_every)
-                        (loss / self.grad_accum_every).backward()
-                        print("Memory usage after backward pass: ", SynchronizedWallClockTimer.memory_usage())
-
-                # log entire loss breakdown
-                # self.log(**train_loss_breakdown)
-                self.print(f'loss: {total_loss:.3f}')
-
-                # clip gradients
-                # self.fabric.clip_gradients(self.model, self.optimizer, max_norm = self.clip_grad_norm)
-                torch.nn.utils.clip_grad_norm_(parameters = self.model.parameters(), max_norm = self.clip_grad_norm)
+                # accumulate
+                scale = self.grad_accum_every ** -1
+                total_loss += loss.item() * scale
+                train_loss_breakdown = accum_dict(train_loss_breakdown, loss_breakdown._asdict(), scale = scale)                           
+                    
+                # with record_function("## backward ##"):
+                # backwards
+                # self.fabric.backward(loss / self.grad_accum_every)
+                (loss / self.grad_accum_every).backward()
                 
-                with record_function("## optimizer ##"):
+                mem_usage = SynchronizedWallClockTimer.memory_usage()
+                print("Memory usage after backward pass: ", mem_usage[2])
+                alloc.append(mem_usage[0])
+                max_alloc.append(mem_usage[1])
 
-                    # optimizer step
-                    self.optimizer.step()
-                    
-                    # update exponential moving average
-                    # self.wait()
-                    # if self.is_main:
-                    #     self.ema_model.update()
-                    # self.wait()
+            # log entire loss breakdown
+            # self.log(**train_loss_breakdown)
+            self.print(f'loss: {total_loss:.3f}')
 
-                    # scheduler
-                    self.scheduler.step()
-                    self.optimizer.zero_grad()
-                    print("Memory usage after optimizer step zero grad: ", SynchronizedWallClockTimer.memory_usage())
-                    
-                self.steps += 1
+            # clip gradients
+            # self.fabric.clip_gradients(self.model, self.optimizer, max_norm = self.clip_grad_norm)
+            torch.nn.utils.clip_grad_norm_(parameters = self.model.parameters(), max_norm = self.clip_grad_norm)
+            
+            # with record_function("## optimizer ##"):
+
+            # optimizer step
+            self.optimizer.step()
+            
+            # update exponential moving average
+            # self.wait()
+            # if self.is_main:
+            #     self.ema_model.update()
+            # self.wait()
+
+            # scheduler
+            self.scheduler.step()
+            self.optimizer.zero_grad()
+            mem_usage = SynchronizedWallClockTimer.memory_usage()
+            print("Memory usage after optimizer step zero grad: ", mem_usage[2])
+            alloc.append(mem_usage[0])
+            max_alloc.append(mem_usage[1])
+            
+            end_time = datetime.now()
+            execution_time = end_time - start_time
+            print(f"Execution time for training iteration: {execution_time}")          
+            
+            self.steps += 1
         print('training complete')
 
-def calculate_model_size(alphafold3, dataset):
+def calculate_model_size(alphafold3, dataset, batch_size):
     # Measuring MACs and #Parameters
     # Use thop to measure # params and MACs 
     print('Using THOP')
     alphafold3.to('cuda')
-    dl = cycle(DataLoader(dataset, batch_size = 1, shuffle = True, drop_last = True))
+    dl = cycle(DataLoader(dataset, batch_size = batch_size, shuffle = True, drop_last = True))
     inputs = next(dl)
     inputs = move_to_device(inputs, 'cuda')
-    macs, params, thopDict = profile(model =alphafold3, inputs=inputs, ret_layer_info = True)
-    print("Model size: macs", macs, " Params: ", params)
+    _, __, thopDict = profile(model =alphafold3, inputs=inputs, ret_layer_info = True)
     
     # param.numel()
-    print('Using param.numel()')
-    total_params = 0 
-    numelDict = {} 
-    for name, param in alphafold3.named_parameters():
-        val = param.numel()
-        numelDict[name] = val 
-        total_params += val
-    print("Total params of model: ", total_params)
+    # print('Using param.numel()')
+    # total_params = 0 
+    # numelDict = {} 
+    # for name, param in alphafold3.named_parameters():
+    #     val = param.numel()
+    #     numelDict[name] = val 
+    #     total_params += val
+    # print("Total params of model: ", total_params)
     
     # preprocessing numelDict
-    toBeDeleted = [] 
-    toBeAdded = []
-    for key in numelDict:
-        if key[-6:] == "weight" and key[0:-6] + "bias" in numelDict:
-            prefix = key[0:-7]
-            toBeAdded.append((prefix, numelDict[key] + numelDict[key[0:-6] + "bias"]))
-            toBeDeleted.append(key)
-            toBeDeleted.append(key[0:-6] + "bias")
-        elif key[-6:] == "weight":
-            toBeDeleted.append(key)
-            toBeAdded.append((key[0:-7], numelDict[key]))
-    for key in toBeDeleted:
-        del numelDict[key]
-    for key, val in toBeAdded:
-        numelDict[key] = val
+    # toBeDeleted = [] 
+    # toBeAdded = []
+    # for key in numelDict:
+    #     if key[-6:] == "weight" and key[0:-6] + "bias" in numelDict:
+    #         prefix = key[0:-7]
+    #         toBeAdded.append((prefix, numelDict[key] + numelDict[key[0:-6] + "bias"]))
+    #         toBeDeleted.append(key)
+    #         toBeDeleted.append(key[0:-6] + "bias")
+    #     elif key[-6:] == "weight":
+    #         toBeDeleted.append(key)
+    #         toBeAdded.append((key[0:-7], numelDict[key]))
+    # for key in toBeDeleted:
+    #     del numelDict[key]
+    # for key, val in toBeAdded:
+    #     numelDict[key] = val
     
     # preprocessing thopDict -> thopValues
     # dfs helper function
@@ -639,8 +656,14 @@ def calculate_model_size(alphafold3, dataset):
     
     thopValues = {}
     dfs(thopDict, "", thopValues)
+    sumMacs = 0 
     
-    print('thopValues: ', thopValues)
+    for key in thopValues:
+        if key[0: 3] == "edm":
+            continue 
+        sumMacs += thopValues[key]
+    print("# macs :", sumMacs)
+    
     print("===================================================")
 
     # Log out operator differences:
@@ -679,15 +702,19 @@ def demo():
     # )
     
     alphafold3.to('cuda')
-    print("Memory usage after model initialization: ", SynchronizedWallClockTimer.memory_usage())
+    mem_usage = SynchronizedWallClockTimer.memory_usage()
+    print("Memory usage after model initialization: ", mem_usage[2])
+    alloc.append(mem_usage[0])
+    max_alloc.append(mem_usage[1])
     
-    dataset = MockAtomDataset(8)
+    dataset = MockAtomDataset(100)
     
+    batch_size = 32
     trainer = Trainer(
         model = alphafold3,
         dataset = dataset,
         num_train_steps = 15,
-        batch_size = 1,
+        batch_size = batch_size,
         valid_every = 1,
         grad_accum_every = 1,
         checkpoint_every = 1,
@@ -701,10 +728,17 @@ def demo():
 
     trainer()
     
-    # calculate_model_size(alphafold3, dataset)
+    calculate_model_size(alphafold3, dataset, batch_size = batch_size)
     
         
 if __name__ == "__main__":
     print('Starting to run demo')
+    # start_time = datetime.now()
     demo()
+    # end_time = datetime.now()
+    # execution_time = end_time - start_time
+    # print(f"Execution time: {execution_time}")
+    
+    # print("alloc: ", alloc)
+    # print("max_alloc: ", max_alloc)
     print('Finished demo')
